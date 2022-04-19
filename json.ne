@@ -38,7 +38,7 @@
     string:     { match: /"(?:\\["\\]|[^\n"\\])*"/, value: x => x.slice(1, -1) },
     user: 'user=',
     group: 'group=',
-    role: 'role=',
+    role_name: 'roleName=',
     identifier: /[A-Za-z0-9_]+/,
     lparen:     '(',
     rparen:     ')',
@@ -76,9 +76,11 @@
 #mapping_groups -> %lbrace _ mapping_roles _ %rbrace {% (d) => d[2] %}
  # | %lbrace _ %rbrace {%() => [] %}
 
-mapping_roles -> _ %role _ items  {% (d) => d[3] %}
-  | mapping_roles separator %role _ items _ {% (d) => d[0].concat(d[4]) %}
+mapping_roles -> _ role_name _ items  {% (d) => d[3] %}
+  | mapping_roles separator role_name _ items _ {% (d) => d[0].concat(d[4]) %}
 
+role_name -> value {% id %}
+  | role_name %equals {% (d) => d[0]%}
 
 #Items it works
 items -> %lbracket mapping_items %rbracket {% (d) => d[1] %}

@@ -18,7 +18,7 @@ const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
 // Parse something!
 try{
     //parser.feed(input);
-    parser.feed("role=[item1,item2,item3], role=[item4,item5]");
+    parser.feed("rolehhg=[item1,item2,item3], role=[item4,item5]");
     //console.log(parser.results)
 
     console.log(JSON.stringify(parser.results));

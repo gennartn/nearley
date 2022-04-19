@@ -12,7 +12,7 @@ function id(x) { return x[0]; }
     string:     { match: /"(?:\\["\\]|[^\n"\\])*"/, value: x => x.slice(1, -1) },
     user: 'user=',
     group: 'group=',
-    role: 'role=',
+    role_name: 'roleName=',
     identifier: /[A-Za-z0-9_]+/,
     lparen:     '(',
     rparen:     ')',
@@ -39,8 +39,10 @@ function id(x) { return x[0]; }
 var grammar = {
     Lexer: lexer,
     ParserRules: [
-    {"name": "mapping_roles", "symbols": ["_", (lexer.has("role") ? {type: "role"} : role), "_", "items"], "postprocess": (d) => d[3]},
-    {"name": "mapping_roles", "symbols": ["mapping_roles", "separator", (lexer.has("role") ? {type: "role"} : role), "_", "items", "_"], "postprocess": (d) => d[0].concat(d[4])},
+    {"name": "mapping_roles", "symbols": ["_", "role_name", "_", "items"], "postprocess": (d) => d[3]},
+    {"name": "mapping_roles", "symbols": ["mapping_roles", "separator", "role_name", "_", "items", "_"], "postprocess": (d) => d[0].concat(d[4])},
+    {"name": "role_name", "symbols": ["value"], "postprocess": id},
+    {"name": "role_name", "symbols": ["role_name", (lexer.has("equals") ? {type: "equals"} : equals)], "postprocess": (d) => d[0]},
     {"name": "items", "symbols": [(lexer.has("lbracket") ? {type: "lbracket"} : lbracket), "mapping_items", (lexer.has("rbracket") ? {type: "rbracket"} : rbracket)], "postprocess": (d) => d[1]},
     {"name": "items", "symbols": [(lexer.has("lbracket") ? {type: "lbracket"} : lbracket), (lexer.has("rbracket") ? {type: "rbracket"} : rbracket)], "postprocess": () => []},
     {"name": "mapping_items", "symbols": ["value"], "postprocess": (d) => [d[0]]},
