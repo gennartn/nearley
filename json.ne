@@ -38,7 +38,11 @@
     string:     { match: /"(?:\\["\\]|[^\n"\\])*"/, value: x => x.slice(1, -1) },
     user: 'user=',
     group: 'group=',
+    group_name: 'groupName=',
+    roles: 'roles=',
+    role: 'role=',
     role_name: 'roleName=',
+    access_to: 'accessTo=',
     identifier: /[A-Za-z0-9_]+/,
     lparen:     '(',
     rparen:     ')',
@@ -76,11 +80,18 @@
 #mapping_groups -> %lbrace _ mapping_roles _ %rbrace {% (d) => d[2] %}
  # | %lbrace _ %rbrace {%() => [] %}
 
-mapping_roles -> _ role_name _ items  {% (d) => {return [{"role":d[1],"items":d[3]}] }%}
-  | mapping_roles separator role_name _ items _ {% (d) => {return d[0].concat([{"role":d[2],"items":d[4]}]) }%}
 
-role_name -> value {% id %}
-  | role_name %equals {% (d) => d[0]%}
+
+
+mapping_roles -> _ %role role_definition  {% (d) => {return [{"role":d[2][0],"items":d[2][1]}] }%}
+  | mapping_roles separator %role role_definition _ {% (d) => {return d[0].concat([{"role":d[3][0],"items":d[3][1]}]) }%}
+
+#role_definition[0] = roleName and role_definition[1] = items
+role_definition ->  %lparen {% id %}
+  | role_definition %role_name value {% (d) => d[2] %}
+  | role_definition %comma {% (d) => d[0]%}
+  | role_definition %access_to items  {% (d) => [d[0]].concat([d[2]]) %} 
+  | role_definition %rparen {% (d) => d[0] %}
 
 #Items it works
 items -> %lbracket mapping_items %rbracket {% (d) => d[1] %}
