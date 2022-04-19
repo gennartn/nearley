@@ -18,10 +18,10 @@ const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
 // Parse something!
 try{
     //parser.feed(input);
-    parser.feed("rolehhg=[item1,item2,item3], role=[item4,item5]");
+    parser.feed("role1=[item1,item2,item3], role2=[item4,item5]");
     //console.log(parser.results)
 
-    console.log(JSON.stringify(parser.results));
+    console.log(JSON.stringify(parser.results[0][1]));
 }catch(e){
     console.log("Parse failed", e.message);
 }

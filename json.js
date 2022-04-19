@@ -39,8 +39,8 @@ function id(x) { return x[0]; }
 var grammar = {
     Lexer: lexer,
     ParserRules: [
-    {"name": "mapping_roles", "symbols": ["_", "role_name", "_", "items"], "postprocess": (d) => d[3]},
-    {"name": "mapping_roles", "symbols": ["mapping_roles", "separator", "role_name", "_", "items", "_"], "postprocess": (d) => d[0].concat(d[4])},
+    {"name": "mapping_roles", "symbols": ["_", "role_name", "_", "items"], "postprocess": (d) => {return [{"role":d[1],"items":d[3]}] }},
+    {"name": "mapping_roles", "symbols": ["mapping_roles", "separator", "role_name", "_", "items", "_"], "postprocess": (d) => {return d[0].concat([{"role":d[2],"items":d[4]}]) }},
     {"name": "role_name", "symbols": ["value"], "postprocess": id},
     {"name": "role_name", "symbols": ["role_name", (lexer.has("equals") ? {type: "equals"} : equals)], "postprocess": (d) => d[0]},
     {"name": "items", "symbols": [(lexer.has("lbracket") ? {type: "lbracket"} : lbracket), "mapping_items", (lexer.has("rbracket") ? {type: "rbracket"} : rbracket)], "postprocess": (d) => d[1]},

@@ -76,8 +76,8 @@
 #mapping_groups -> %lbrace _ mapping_roles _ %rbrace {% (d) => d[2] %}
  # | %lbrace _ %rbrace {%() => [] %}
 
-mapping_roles -> _ role_name _ items  {% (d) => d[3] %}
-  | mapping_roles separator role_name _ items _ {% (d) => d[0].concat(d[4]) %}
+mapping_roles -> _ role_name _ items  {% (d) => {return [{"role":d[1],"items":d[3]}] }%}
+  | mapping_roles separator role_name _ items _ {% (d) => {return d[0].concat([{"role":d[2],"items":d[4]}]) }%}
 
 role_name -> value {% id %}
   | role_name %equals {% (d) => d[0]%}
