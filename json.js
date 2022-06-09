@@ -12,6 +12,8 @@ function id(x) { return x[0]; }
     string:     { match: /"(?:\\["\\]|[^\n"\\])*"/, value: x => x.slice(1, -1) },
     user: 'user=',
     group: 'group=',
+    group_name: 'groupName=',
+    roles: 'roles=',
     role: 'role=',
     role_name: 'roleName=',
     access_to: 'accessTo=',
@@ -41,6 +43,17 @@ function id(x) { return x[0]; }
 var grammar = {
     Lexer: lexer,
     ParserRules: [
+    {"name": "mapping_model", "symbols": ["mapping_groups"], "postprocess": id},
+    {"name": "mapping_model", "symbols": ["mapping_model", "mapping_roles"], "postprocess": (d) => [d[0]].concat([d[1]])},
+    {"name": "mapping_model", "symbols": ["mapping_model", "_", (lexer.has("comma") ? {type: "comma"} : comma), "_"], "postprocess": (d) => d[0]},
+    {"name": "mapping_groups", "symbols": ["_", (lexer.has("group") ? {type: "group"} : group), "group_definition"], "postprocess": (d) => {return [{"group":d[2][0],"items":d[2][1]}] }},
+    {"name": "mapping_groups", "symbols": ["mapping_groups", "separator", (lexer.has("group") ? {type: "group"} : group), "group_definition", "_"], "postprocess": (d) => {return d[0].concat([{"group":d[3][0],"items":d[3][1]}]) }},
+    {"name": "group_definition", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen)], "postprocess": id},
+    {"name": "group_definition", "symbols": ["group_definition", (lexer.has("group_name") ? {type: "group_name"} : group_name), "value"], "postprocess": (d) => d[2]},
+    {"name": "group_definition", "symbols": ["group_definition", "_", (lexer.has("comma") ? {type: "comma"} : comma), "_"], "postprocess": (d) => d[0]},
+    {"name": "group_definition", "symbols": ["group_definition", (lexer.has("roles") ? {type: "roles"} : roles), (lexer.has("lbrace") ? {type: "lbrace"} : lbrace), "_", "mapping_roles"], "postprocess": (d) => [d[0]].concat([d[4]])},
+    {"name": "group_definition", "symbols": ["group_definition", "_", (lexer.has("rbrace") ? {type: "rbrace"} : rbrace), "_"], "postprocess": (d) => d[0]},
+    {"name": "group_definition", "symbols": ["group_definition", (lexer.has("rparen") ? {type: "rparen"} : rparen)], "postprocess": (d) => d[0]},
     {"name": "mapping_roles", "symbols": ["_", (lexer.has("role") ? {type: "role"} : role), "role_definition"], "postprocess": (d) => {return [{"role":d[2][0],"items":d[2][1]}] }},
     {"name": "mapping_roles", "symbols": ["mapping_roles", "separator", (lexer.has("role") ? {type: "role"} : role), "role_definition", "_"], "postprocess": (d) => {return d[0].concat([{"role":d[3][0],"items":d[3][1]}]) }},
     {"name": "role_definition", "symbols": [(lexer.has("lparen") ? {type: "lparen"} : lparen)], "postprocess": id},
@@ -68,7 +81,7 @@ var grammar = {
     {"name": "separator", "symbols": ["_", (lexer.has("comma") ? {type: "comma"} : comma), "_"], "postprocess": () => null},
     {"name": "separator", "symbols": ["_"], "postprocess": () => null}
 ]
-  , ParserStart: "mapping_roles"
+  , ParserStart: "mapping_model"
 }
 if (typeof module !== 'undefined'&& typeof module.exports !== 'undefined') {
    module.exports = grammar;

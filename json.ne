@@ -73,37 +73,37 @@
 @lexer lexer
 
 
+mapping_model -> mapping_groups {% id %}
+  | mapping_model mapping_roles {% (d) => [d[0]].concat([d[1]]) %} 
+  | mapping_model _ %comma _ {% (d) => d[0]%}
 
-#groups -> _ %group  mapping_groups
- # | 
-
-#mapping_groups -> %lbrace _ mapping_roles _ %rbrace {% (d) => d[2] %}
- # | %lbrace _ %rbrace {%() => [] %}
+mapping_groups -> _ %group group_definition  {% (d) => {return [{"group":d[2][0],"items":d[2][1]}] }%}
+  | mapping_groups separator %group group_definition _ {% (d) => {return d[0].concat([{"group":d[3][0],"items":d[3][1]}]) }%}
 
 
+group_definition -> %lparen {% id %}
+  | group_definition %group_name value {% (d) => d[2] %}
+  | group_definition _ %comma _ {% (d) => d[0]%}
+  | group_definition %roles %lbrace _ mapping_roles  {% (d) => [d[0]].concat([d[4]]) %} 
+  | group_definition _ %rbrace _ {% (d) => d[0] %}
+  | group_definition %rparen {% (d) => d[0] %}
 
 
 mapping_roles -> _ %role role_definition  {% (d) => {return [{"role":d[2][0],"items":d[2][1]}] }%}
   | mapping_roles separator %role role_definition _ {% (d) => {return d[0].concat([{"role":d[3][0],"items":d[3][1]}]) }%}
 
-#role_definition[0] = roleName and role_definition[1] = items
+
 role_definition ->  %lparen {% id %}
   | role_definition %role_name value {% (d) => d[2] %}
   | role_definition %comma {% (d) => d[0]%}
   | role_definition %access_to items  {% (d) => [d[0]].concat([d[2]]) %} 
   | role_definition %rparen {% (d) => d[0] %}
 
-#Items it works
 items -> %lbracket mapping_items %rbracket {% (d) => d[1] %}
   | %lbracket %rbracket {%() => [] %}
 
 mapping_items -> value  {% (d) => [d[0]] %}
   | mapping_items _ %comma _ value {% (d) => d[0].concat(d[4]) %}
-  #| mapping_items _ %comma _ value %coma {% (d) => d[0].concat([d[4]]) %} to avoid to return null if it ends with a coma
-
-#from the video and does not works
-#mapping_items -> mapping_item {% (d) => [d[0]]%}
- # | mapping_item %coma mapping_items {%(d) => [d[0], ...d[2]] %}
 
 value -> %identifier {% id %}
 | %string {% id %}
@@ -111,7 +111,6 @@ value -> %identifier {% id %}
 _ -> null {% () => null %}
 	| _ %WS  {% () => null %}
 	| _ %NL  {% () => null %}
-# | _ %comment {% () => null %}
 
 __ -> %WS			{% () => null %}
 	| %NL			{% () => null %}
@@ -126,19 +125,5 @@ NL -> %NL {% () => null %}
 separator -> _ %comma _ {% () => null%}
   | _ {% () => null %}
 
-#characters -> character {% id %} 
-#| character characters {% (data) => data[0] + data[1] %}
 
-#character -> [^\"\\"] {% id %}
-#| "\\" escape {% (data => data[1])%}
-
-#escape 
-#-> "\"" {% () => '"' %}
-#|  "\\" {% () => "\\" %}
-#| "/"  {% () => "/" %}
-#|   "b" {% () => "\b" %}
-#|   "f" {% () => "\f" %}
-#|   "n" {% () => "\n" %}
-#|   "r" {% () => "\r" %}
-#|   "t" {% () => "\t" %}
 
